@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Data{% endblock %}
+
+{% block content %}
+<h1 style="text-align: center; margin-bottom: 30px;">Demo Data</h1>
+
+        
+         <div class="table-container" style="width: 80%; margin-top: 20px; text-align: center;">
+
+            <h2>Current Demo Data</h2> 
+
+            <table border="1" style="width: 100%; text-align: center;">
+                <thead>
+                    <tr>
+                        <th>Mac Address</th>
+                        <th>Failure ID</th>
+                        <th>Count</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in data %}
+                    <tr data-id="{{ entry[0] }}">
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[0] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+       
+    </div>
+
+    <style>
+        /* Customize marker label style */
+        .leaflet-tooltip.marker-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Table container */
+        .table-container {
+            margin: 20px auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 1300px; /* Adjusted max-width for a wider table */
+            background-color: #a9cada; /* Lighter blue background */
+            border-radius: 15px; /* Rounded corners for the container */
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: separate; /* To keep space between rows */
+            border-spacing: 0 5px; /* Only add spacing between rows, not columns */
+            border-radius: 15px; /* Rounded corners for the entire table */
+        }
+
+        /* Table header styles */
+        button, th{
+            background-color: #324e6b; /* Lighter blue for the header */
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 15px;
+            border-top-left-radius: 15px; /* Rounded top left corner */
+            border-top-right-radius: 15px; /* Rounded top right corner */
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            border: none;
+        }
+        button:hover {
+            cursor: pointer;
+        }
+
+        /* Table row styles */
+        tr {
+            background-color: #f5f0e1; /* Light beige background for each row */
+            border-radius: 15px; /* Rounded corners for rows */
+            padding: 10px;
+        }
+
+        tr:hover {
+            background-color: #e1d4b7; /* Slightly darker beige on hover */
+        }
+
+        /* Table cell styles */
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #0c0c0c; /* Light border at the bottom of each cell */
+        }
+
+        /* Apply rounded corners for each row's cells */
+        tr:first-child td:first-child {
+            border-top-left-radius: 15px; /* First row's first cell */
+        }
+
+        tr:first-child td:last-child {
+            border-top-right-radius: 15px; /* First row's last cell */
+        }
+
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 15px; /* Last row's first cell */
+        }
+
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 15px; /* Last row's last cell */
+        }
+
+        /* Last row has no bottom border */
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dropdown {
+        position: relative;
+        display: inline-block;
+        }
+
+        .dropdown-content {
+        display: none;
+        /* position: absolute; */
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        }
+
+        .dropdown-content label {
+        display: block;
+        margin-top: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+    .page-link {
+        padding: 8px 15px;
+        background-color: #324e6b;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    .page-link.active {
+        background-color: #e1d4b7;
+        font-weight: bold;
+    }
+
+    .page-link:hover {
+        background-color: #5c7d9b;
+    }
+
+        #reset-filters {
+            background-color: rgb(146, 5, 5);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+* {
+  /* padding: 0; */
+  margin: 0;
+  text-decoration: none;
+  list-style: none;
+}
+body {
+  font-family: "Montserrat", sans-serif;
+}
+
+nav {
+  background: #0082e6;
+  display: flex;
+  justify-content: space-around;
+  height: 10vh;
+  align-items: center;
+}
+
+label.logo {
+  /* margin-left: 40px; */
+  color: white;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+nav ul li {
+  display: inline-block;
+  /* line-height: 80px; */
+  margin: 5px;
+}
+nav ul li a {
+  color: white;
+  font-size: 16px;
+  padding: 7px 13px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.navItem.active,
+.navItem:hover {
+  background: #1b9bff;
+  transition: .5s;
+}
+
+.profile {
+    background: #0a65aa;
+    color: white;
+    font-size: 16px;
+    /* text-transform: uppercase; */
+    padding: 7px 13px;
+    border-radius: 3px;
+}
+
+
+label {
+    font-size: 11pt;
+}
+
+#forgot-pass {
+color: #0a65aa;
+font-family: "Raleway", sans-serif;
+font-size: 10pt;
+margin-top: 3px;
+text-align: right;
+}
+#card {
+background: #fbfbfb;
+border-radius: 8px;
+box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.65);
+height: 410px;
+margin: 6rem auto 8.1rem auto;
+width: 329px;
+}
+
+#card-content {
+    padding: 12px 44px; 
+}
+  #card-title {
+    /* font-family: "Raleway Thin", sans-serif; */
+    letter-spacing: 4px;
+    padding-bottom: 23px;
+    padding-top: 13px;
+    text-align: center;
+  }
+  #signup {
+    color: #0a65aa;
+    font-family: "Raleway", sans-serif;
+    font-size: 10pt;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+ .signButton:hover {
+    color: red;
+ }
+  #submit-btn {
+    background: #0a65aa;
+    border: none;
+    border-radius: 21px;
+    box-shadow: 0px 1px 8px #1b9bff;
+    cursor: pointer;
+    color: white;
+    font-family: "Raleway SemiBold", sans-serif;
+    height: 42.3px;
+    margin: 0 auto;
+    margin-top: 50px;
+    transition: 0.25s;
+    width: 153px;
+  }
+  #submit-btn:hover {
+    box-shadow: 0px 1px 18px #1b9bff;
+  }
+  .form {
+    align-items: left;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-border {
+    background: #0a65aa;
+    height: 1px;
+    width: 100%;
+  }
+  .form-content {
+    background: #fbfbfb;
+    border: none;
+    outline: none;
+    padding-top: 14px;
+  }
+
+
+    </style>
+
+    <script>
+
+
+        ///////////////////////////////
+
+                    // Global variable for URL parameters
+                    document.addEventListener("DOMContentLoaded", function() {
+                // Initialize URL parameters
+                    urlParams = new URLSearchParams(window.location.search);
+                    
+                    // Initialize all dropdowns
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        let button = dropdown.querySelector('button');
+                        let content = dropdown.querySelector('.dropdown-content');
+
+                        button.addEventListener('click', function() {
+                            // Toggle the display of this dropdown
+                            content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+
+                            // Close other dropdowns
+                            document.querySelectorAll('.dropdown .dropdown-content').forEach(otherContent => {
+                                if (otherContent !== content) {
+                                    otherContent.style.display = 'none';
+                                }
+                            });
+                        });
+                    });
+                    
+                    // Set pagination links
+                    document.querySelectorAll(".page-link").forEach(link => {
+                        const pageNumber = link.dataset.page;
+                        if (pageNumber) {
+                            let newParams = new URLSearchParams(urlParams.toString());
+                            newParams.set("page", pageNumber);  // Update page number in URL parameters
+                            link.href = "?" + newParams.toString();  // Set href with all parameters
+                        }
+                    });
+                    
+                    // Restore checkbox selections
+                    setCheckboxValues("monitors");
+                    setCheckboxValues("directions");
+                    
+                    // Restore date and time inputs
+                    setDateTimeInputs();
+                    setInputValue("min_speed", 'input[name="min_speed"]');
+                    setInputValue("max_speed", 'input[name="max_speed"]');
+
+                    // Add reset filters functionality
+                    document.getElementById("reset-filters").addEventListener("click", function() {
+                        // Navigate to the base URL without any query parameters
+                        window.location.href = "/bikedata";
+                    });
+                    
+                    document.getElementById("apply-filters").addEventListener("click", function() {
+                        let selectedMonitors = getSelectedValues('monitors');
+                        let selectedDirections = getSelectedValues('directions');
+
+
+                        let fromDate = formatTimestamp(
+                            getInputValue('input[name="from_date"]'),
+                            getInputValue('input[name="from_time"]')
+                        );
+
+                        let toDate = formatTimestamp(
+                            getInputValue('input[name="to_date"]'),
+                            getInputValue('input[name="to_time"]')
+                        );
+
+                        let minSpeed = getInputValue('input[name="min_speed"]');
+                        let maxSpeed = getInputValue('input[name="max_speed"]');
+
+                        
+
+                        let queryParams = new URLSearchParams();
+                        if (selectedMonitors.length) queryParams.append("monitors", selectedMonitors.join(","));
+                        if (selectedDirections.length) queryParams.append("directions", selectedDirections.join(","));
+                        if (fromDate) queryParams.append("from_date", fromDate);
+                        if (toDate) queryParams.append("to_date", toDate);
+                        if (minSpeed) queryParams.append("min_speed", minSpeed);
+                        if (maxSpeed) queryParams.append("max_speed", maxSpeed);
+                        
+                        window.location.href = "/bikedata?" + queryParams.toString();
+              
+                    });
+                    
+                    // Set up graph button click handlers
+                    document.getElementById('speed-graph').addEventListener('click', function() {
+                        handleGraphButtonClick('speed');
+                    });
+                });
+
+                // Helper functions
+                function getInputValue(selector) {
+                    const element = document.querySelector(selector);
+                    return element ? element.value : '';  // Safeguard for missing elements
+                }
+
+                function formatTimestamp(date, time) {
+                    if (!date) return '';  // Return empty string if no date
+                    return `${date} ${time || '00:00'}:00`;  // Correctly use template literals
+                }
+
+                function getSelectedValues(name) {
+                    return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+                                .map(cb => cb.value);
+                }
+
+                function setCheckboxValues(name) {
+                    const values = urlParams.get(name);
+                    if (values) {
+                        values.split(",").forEach(value => {
+                            let checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+                }
+
+                function setDateTimeInputs() {
+                    let fromDate = urlParams.get("from_date");
+                    let toDate = urlParams.get("to_date");
+                    
+                    if (fromDate) {
+                        // Parse the timestamp (format: YYYY-MM-DD HH:MM:SS)
+                        let [datePart, timePart] = fromDate.split(' ');
+                        document.querySelector('input[name="from_date"]').value = datePart;
+                        if (timePart) {
+                            document.querySelector('input[name="from_time"]').value = timePart.substring(0, 5); // Remove seconds
+                        }
+                    }
+                    
+                    if (toDate) {
+                        // Parse the timestamp (format: YYYY-MM-DD HH:MM:SS)
+                        let [datePart, timePart] = toDate.split(' ');
+                        document.querySelector('input[name="to_date"]').value = datePart;
+                        if (timePart) {
+                            document.querySelector('input[name="to_time"]').value = timePart.substring(0, 5); // Remove seconds
+                        }
+                    }
+                }
+
+                // Graph functions
+                function handleGraphButtonClick(graphType) {
+                    // Get selected monitor
+                    const selectedMonitor = document.querySelector('input[name="monitors_graph"]:checked');
+                    
+                    if (!selectedMonitor) {
+                        alert("Please select a monitor first");
+                        return;
+                    }
+                    
+                    // Get date range filters if present
+                    const fromDate = urlParams.get("from_date") || "";
+                    const toDate = urlParams.get("to_date") || "";
+                    
+                    // Fetch data from the API
+                    fetchGraphData(selectedMonitor.value, graphType, fromDate, toDate);
+                }
+
+                async function fetchGraphData(monitorId, graphType, fromDate, toDate) {
+                    // Build the API URL
+                    let apiUrl = `/api/graph-data-bike?monitor_id=${monitorId}&graph_type=${graphType}`;
+                    if (fromDate) apiUrl += `&from_date=${fromDate}`;
+                    if (toDate) apiUrl += `&to_date=${toDate}`;
+                    
+                    try {
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            document.getElementById('chart').innerHTML = `<div style="text-align: center; color: red; padding: 50px;">${data.error}</div>`;
+                            return;
+                        }
+                        
+                        createPlotlyGraph(data, graphType);
+                    } catch (error) {
+                        document.getElementById('chart').innerHTML = `<div style="text-align: center; color: red; padding: 50px;">Error loading graph: ${error.message}</div>`;
+                    }
+                }
+
+                function setInputValue(name, selector) {
+                let value = urlParams.get(name);
+                if (value) {
+                    document.querySelector(selector).value = value;
+                }
+            }
+
+                function createPlotlyGraph(data, graphType) {
+                    // Configure graph based on type
+                    let graphConfig = {
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: { width: 2 }
+                    };
+                    
+                    // Customize graph appearance based on type
+                    switch(graphType.toLowerCase()) {
+                        case 'soc':
+                            graphConfig.line.color = 'rgb(46, 204, 113)';
+                            break;
+                        case 'failure':
+                            graphConfig.mode = 'markers';
+                            graphConfig.marker = { 
+                                size: 10,
+                                color: 'rgb(231, 76, 60)'
+                            };
+                            break;
+                        case 'state':
+                            graphConfig.mode = 'lines';
+                            graphConfig.line = {
+                                shape: 'hv',
+                                color: 'rgb(52, 152, 219)'
+                            };
+                            
+                            // Handle state mapping for y-axis ticks if provided
+                            if (data.state_mapping && Object.keys(data.state_mapping).length > 0) {
+                                data.layout = data.layout || {};
+                                data.layout.yaxis = data.layout.yaxis || {};
+                                data.layout.yaxis.tickmode = 'array';
+                                data.layout.yaxis.tickvals = Object.keys(data.state_mapping).map(Number);
+                                data.layout.yaxis.ticktext = Object.values(data.state_mapping);
+                            }
+                            break;
+                    }
+                    
+                    // Create the plot
+                    const layout = {
+                        title: { text: data.title},
+                        xaxis: {
+                            title: {text: data.xaxis},
+                            showgrid: true,
+                            zeroline: false,
+                            type: 'date',
+                            tickformat: '%Y-%m-%d %H:%M'
+                        },
+                        yaxis: {
+                            title: {text: data.yaxis},
+                            showline: true,
+                            showgrid: true
+                        },
+                        margin: { l: 60, r: 40, t: 80, b: 80 }
+                    };
+                    
+                    // Merge with custom layout if provided
+                    if (data.layout) {
+                        Object.assign(layout, data.layout);
+                    }
+                    
+                    const plotData = [{
+                        x: data.time,
+                        y: data.y_values,
+                        ...graphConfig
+                    }];
+                    
+                    Plotly.newPlot('chart', plotData, layout);
+                }
+        
+
+    </script>
+{% endblock %}

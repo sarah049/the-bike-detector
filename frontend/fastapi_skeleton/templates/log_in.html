@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Register - The Bike Detector{% endblock %}
+
+{% block content %}
+
+    <body>
+        {% if success %}
+            <script>
+                alert("Monitor '{{ monitor_id }}' registered successfully!");
+            </script>
+        {% endif %}
+
+        <div id="card">
+            <div id="card-content">
+                <div id="card-title">
+                    <h2>REGISTER MONITOR</h2>
+                </div>
+                <form id="monitor-form" class="form">
+                    <label for="monitor-id">Monitor ID</label>
+                    <input id="monitor-id" class="form-content" type="number" name="monitor_id" required />
+                    <div class="form-border"></div>
+                
+                    <label for="location">Location</label>
+                    <input type="text" name="latitude" id="latitude" placeholder="latitude" required>
+                    <input type="text" name="longitude" id="longitude" placeholder="longitude" required>
+                    <div class="form-border"></div>
+                
+                    <label for="access-code">Access Code</label>
+                    <input id="access-code" class="form-content" type="password" name="access_code" required />
+                    <div class="form-border"></div>
+                
+                    <button id="submit-btn" type="submit">REGISTER MONITOR</button>
+                </form>
+            </div>
+        </div>
+  
+    </body>
+
+    <style>
+
+      
+        #card {
+          background-color: white;
+          border-radius: 20px;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+          width: 400px;
+          padding: 30px 40px;
+          transition: transform 0.3s ease;
+        }
+        
+        #card-title {
+            letter-spacing: 0px;
+            padding-bottom: 0px;
+        }
+        #card-title h2 {
+          text-align: center;
+          color: #333;
+          margin-bottom: 25px;
+        }
+      
+        .form label {
+          display: block;
+          margin-top: 15px;
+          font-weight: 600;
+          color: #444;
+        }
+      
+        .form-content,
+        input[type="text"],
+        input[type="password"] {
+          width: 100%;
+          padding: 12px;
+          margin-top: 5px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-sizing: border-box;
+          transition: border-color 0.2s;
+        }
+      
+        .form-content:focus,
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+          border-color: #0082e6;
+          outline: none;
+        }
+      
+        .form-border {
+          height: 1px;
+          background-color: #e0e0e0;
+          margin-top: 10px;
+        }
+      
+        #submit-btn {
+          width: 100%;
+          background-color: #0082e6;
+          color: white;
+          font-size: 16px;
+          padding: 12px;
+          margin-top: 80px;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+      
+        #submit-btn:hover {
+          background-color: #0082e6;
+        }
+
+        
+      </style>
+      
+
+     <script>
+        document.getElementById("monitor-form").addEventListener("submit", async function(e) {
+          e.preventDefault();
+      
+          const form = e.target;
+          const formData = new FormData(form);
+      
+          const response = await fetch("/register_monitor", {
+            method: "POST",
+            body: formData
+          });
+      
+          const result = await response.json();
+      
+          if (result.success) {
+            alert(result.message);
+            form.reset(); // Optional: clear the form
+          } else {
+            alert("Error: " + result.message);
+          }
+        });
+      </script> 
+
+{% endblock %}

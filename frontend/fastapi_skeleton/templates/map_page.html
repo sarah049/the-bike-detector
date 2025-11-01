@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 style="text-align: center;">Monitor Data Map</h1>
+
+    <div style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
+        <!-- Add Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <!-- Add Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+        <!-- Map -->
+        <div id="map" style="height: 500px; width: 80%;"></div>
+
+        <!-- Current Monitor Data Table -->
+        <div class="table-container" style="width: 80%; margin-top: 20px; text-align: center;">
+            <h2>Current Monitor Data</h2>
+            <table border="1" style="width: 100%; text-align: center;">
+                <thead>
+                    <tr>
+                        <th>Monitor ID</th>
+                        <th>Time of Last Ping</th>
+                        <th>Battery SOC</th>
+                        <th>Failure ID</th>
+                        <th>State</th>
+                        <th>Location</th>
+                        <th>Firmware Version</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in data %}
+                    <tr data-id="{{ entry[0] }}">
+                        <td>{{ entry[0] }}</td>
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                        <td>{{ entry[4] }}</td>
+                        <td>{{ entry[5] }}</td>
+                        <td>{{ entry[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("Document Loaded");
+
+            var map = L.map('map');
+            var markers = {};
+            var markerLocations = [];
+
+            {% for entry in data %}
+                var location = "{{ entry[5] }}".split(", ");
+                var lat = parseFloat(location[0]);
+                var lon = parseFloat(location[1]);
+
+                markerLocations.push([lat, lon]);
+
+                var marker = L.circleMarker([lat, lon], {
+                    radius: 10,
+                    color: 'transparent',
+                    fillColor: '#3388cc',
+                    fillOpacity: 0.8,
+                    weight: 0,
+                    interactive: true,
+                    zoomAnimation: true,
+                }).addTo(map);
+
+                marker.bindPopup("<b>Monitor ID:</b> {{ entry[0] }}<br>" +
+                                 "<b>Time of Last Ping:</b> {{ entry[1] }}<br>" +
+                                 "<b>Battery SOC:</b> {{ entry[2] }}<br>" +
+                                 "<b>Failure ID:</b> {{ entry[3] }}<br>" +
+                                 "<b>State:</b> {{ entry[4] }}<br>" +
+                                 "<b>Location:</b> {{ entry[5] }}<br>" +
+                                 "<b>Firmware Version:</b> {{ entry[6] }}");
+
+                marker.bindTooltip("{{ entry[0] }}", { permanent: true, direction: "center", className: "marker-label" });
+
+                markers[{{ entry[0] }}] = marker;
+            {% endfor %}
+
+            var bounds = L.latLngBounds(markerLocations);
+            map.fitBounds(bounds);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            map.on('zoom', function () {
+                var zoomLevel = map.getZoom();
+                Object.values(markers).forEach(function (marker) {
+                    var newRadius = Math.max(10, 10 + zoomLevel * 0.5);
+                    marker.setRadius(newRadius);
+                });
+            });
+
+            const rows = document.querySelectorAll('table tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('click', function() {
+                    const monitorId = this.getAttribute('data-id');
+                    const marker = markers[monitorId];
+                    if (marker) {
+                        map.setView(marker.getLatLng(), 13);
+                        marker.openPopup(); 
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* Customize marker label style */
+        .leaflet-tooltip.marker-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Table container */
+        .table-container {
+            margin: 20px auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 1300px; /* Adjusted max-width for a wider table */
+            background-color: #a9cada; /* Lighter blue background */
+            border-radius: 15px; /* Rounded corners for the container */
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: separate; /* To keep space between rows */
+            border-spacing: 0 5px; /* Only add spacing between rows, not columns */
+            border-radius: 15px; /* Rounded corners for the entire table */
+        }
+
+        /* Table header styles */
+        th {
+            background-color: #324e6b; /* Lighter blue for the header */
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 15px;
+            border-top-left-radius: 15px; /* Rounded top left corner */
+            border-top-right-radius: 15px; /* Rounded top right corner */
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        /* Table row styles */
+        tr {
+            background-color: #f5f0e1; /* Light beige background for each row */
+            border-radius: 15px; /* Rounded corners for rows */
+            padding: 10px;
+        }
+
+        tr:hover {
+            background-color: #e1d4b7; /* Slightly darker beige on hover */
+        }
+
+        /* Table cell styles */
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #0c0c0c; /* Light border at the bottom of each cell */
+        }
+
+        /* Apply rounded corners for each row's cells */
+        tr:first-child td:first-child {
+            border-top-left-radius: 15px; /* First row's first cell */
+        }
+
+        tr:first-child td:last-child {
+            border-top-right-radius: 15px; /* First row's last cell */
+        }
+
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 15px; /* Last row's first cell */
+        }
+
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 15px; /* Last row's last cell */
+        }
+
+        /* Last row has no bottom border */
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+    h1 {
+        font-size: 1.5rem;
+        padding: 10px;
+        text-align: center;
+    }
+
+    #map {
+        height: 300px;
+        width: 100%;
+    }
+
+    .table-container {
+        padding: 10px;
+        width: 95%;
+    }
+
+    table {
+        font-size: 12px;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        font-size: 13px;
+    }
+
+    /* Make table scrollable horizontally */
+    .table-container table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background-color: #eee;
+        border-radius: 10px;
+    }
+}
+
+    </style>
+
+{% endblock %}

@@ -1,0 +1,629 @@
+{% extends "base.html" %}
+
+{% block title %}Monitor Data{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center; margin-bottom: 30px;">Monitor Data</h1>
+    <!-- <p>View monitor data here.</p> -->
+                <div class="options-panel" style="display: flex; justify-content: space-evenly;">
+
+                
+                    <div class="dropdown">
+                        <button>Monitors</button>
+                        <div class="dropdown-content" style="display: none;">
+                            <label><input type="checkbox" name="monitors" value="1"> Monitor 1</label>
+                            <label><input type="checkbox" name="monitors" value="2"> Monitor 2</label>
+                            <label><input type="checkbox" name="monitors" value="3"> Monitor 3</label>
+                            <label><input type="checkbox" name="monitors" value="4"> Monitor 4</label>
+                        </div>
+                    </div>
+
+                     <!-- Time Frame Dropdown -->
+
+                    <div class="dropdown">
+                        <button>Time Frame</button>
+                        <div class="dropdown-content" style="display: none;">
+                            <label>From:</label>
+                            <input type="date" id="from_date" name="from_date">
+                            <input type="time" id="from_time" name="from_time">
+                            <label>To:</label>
+                            <input type="date" id="to_date" name="to_date">
+                            <input type="time" id="to_time" name="to_time">
+                        </div>
+                    </div>
+
+                    <!-- Failures Dropdown -->
+                    <div class="dropdown">
+                        <button>Failures</button>
+                        <div class="dropdown-content" style="display: none;">
+                            <label><input type="checkbox" name="failures" value="1"> 1</label>
+                            <label><input type="checkbox" name="failures" value="2"> 2</label>
+                            <label><input type="checkbox" name="failures" value="3"> 3</label>
+                            <label><input type="checkbox" name="failures" value="4"> 4</label>
+                            <label><input type="checkbox" name="failures" value="5"> 5</label>
+                        </div>
+                    </div>
+
+                    <!-- State Dropdown -->
+                    <div class="dropdown">
+                        <button>State</button>
+                        <div class="dropdown-content" style="display: none;">
+                            <label><input type="checkbox" name="state" value="awake"> Awake</label>
+                            <label><input type="checkbox" name="state" value="light_sleep"> Light Sleep</label>
+                            <label><input type="checkbox" name="state" value="deep_sleep"> Deep Sleep</label>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button id="apply-filters">Apply Filters</button>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button id="reset-filters">Delete Filters</button>
+                    </div>
+                </div>
+
+
+            <!-- table container -->
+            <div class="table-container" style="width: 80%; margin-top: 20px; text-align: center;">
+
+                <h2>Current Monitor Data</h2>
+
+                <table border="1" style="width: 100%; text-align: center;">
+                    <thead>
+                        <tr>
+                            <th>Monitor ID</th>
+                            <th>Time of Last Ping</th>
+                            <th>Battery SOC</th>
+                            <th>Failure ID</th>
+                            <th>State</th>
+                            <th>Location</th>
+                            <th>Firmware Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in data %}
+                        <tr data-id="{{ entry[0] }}">
+                            <td>{{ entry[0] }}</td>
+                            <td>{{ entry[1] }}</td>
+                            <td>{{ entry[2] }}</td>
+                            <td>{{ entry[3] }}</td>
+                            <td>{{ entry[4] }}</td>
+                            <td>{{ entry[5] }}</td>
+                            <td>{{ entry[6] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <div class="pagination" style="text-align: center; margin-top: 20px; margin-bottom: 40px;">
+                {% set total_pages = (total_entries // 10) + (1 if total_entries % 10 != 0 else 0) %}
+                {% set start_page = ((current_page - 1) // 10) * 10 + 1 %}
+                {% set end_page = start_page + 9 if start_page + 9 < total_pages else total_pages %}
+            
+                {% if current_page > 1 %}
+                    <a href="#" class="page-link" data-page="{{ current_page - 1 }}">Previous</a>
+                {% endif %}
+            
+                {% if start_page > 1 %}
+                    <a href="#" class="page-link" data-page="1">1</a>
+                    {% if start_page > 2 %}
+                        <span>...</span>
+                    {% endif %}
+                {% endif %}
+            
+                {% for page in range(start_page, end_page + 1) %}
+                    <a href="#" class="page-link {% if page == current_page %}active{% endif %}" data-page="{{ page }}">{{ page }}</a>
+                {% endfor %}
+            
+                {% if end_page < total_pages %}
+                    <span>...</span>
+                    <a href="#" class="page-link" data-page="{{ total_pages }}">{{ total_pages }}</a>
+                {% endif %}
+            
+                {% if current_page < total_pages %}
+                    <a href="#" class="page-link" data-page="{{ current_page + 1 }}">Next</a>
+                {% endif %}
+            </div>
+            <h2 style="text-align: center; margin-bottom: 30px;">Graph Data</h2>
+            <div class="options-panel" style="display: flex; justify-content: space-evenly;">
+                <!-- Monitor selection dropdown -->
+                <div class="dropdown">
+                    <button>Monitor</button>
+                    <div class="dropdown-content" style="display: none;">
+                        <label><input type="radio" name="monitors_graph" value="1"> Monitor 1</label>
+                        <label><input type="radio" name="monitors_graph" value="2"> Monitor 2</label>
+                        <label><input type="radio" name="monitors_graph" value="3"> Monitor 3</label>
+                        <label><input type="radio" name="monitors_graph" value="4"> Monitor 4</label>
+                    </div>
+                </div>
+                
+                <!-- Graph type buttons -->
+                <div class="dropdown">
+                    <button id="soc-graph">SOC vs Time</button>
+                </div>
+                
+                <div class="dropdown">
+                    <button id="failure-graph">Failure vs Time</button>
+                </div>
+            
+                <div class="dropdown">
+                    <button id="State-graph">State vs Time</button>
+                </div>
+            </div>
+            
+            <!-- Chart container -->
+            <div id="chart" class="chart" style="height: 500px; width: 80%; margin: 0 auto;"></div>
+            
+            <!-- Plotly JS -->
+            <script src="https://cdn.plot.ly/plotly-3.0.0.min.js" charset="utf-8"></script>
+        </div>
+
+        <style>
+            /* Customize marker label style */
+            .leaflet-tooltip.marker-label {
+                font-size: 12px;
+                font-weight: bold;
+                color: white;
+                text-align: center;
+                background-color: transparent;
+                border: none;
+                box-shadow: none;
+            }
+    
+            #map {
+                height: 500px;
+                width: 100%;
+            }
+    
+            /* Table container */
+            .table-container {
+                margin: 20px auto;
+                padding: 20px;
+                width: 100%;
+                max-width: 1300px; /* Adjusted max-width for a wider table */
+                background-color: #a9cada; /* Lighter blue background */
+                border-radius: 15px; /* Rounded corners for the container */
+            }
+    
+            /* Table styles */
+            table {
+                width: 100%;
+                border-collapse: separate; /* To keep space between rows */
+                border-spacing: 0 5px; /* Only add spacing between rows, not columns */
+                border-radius: 15px; /* Rounded corners for the entire table */
+            }
+    
+            /* Table header styles */
+            button, th{
+                background-color: #324e6b; /* Lighter blue for the header */
+                color: white;
+                padding: 12px;
+                text-align: left;
+                font-size: 15px;
+                border-top-left-radius: 15px; /* Rounded top left corner */
+                border-top-right-radius: 15px; /* Rounded top right corner */
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 15px;
+                border: none;
+            }
+            button:hover {
+                cursor: pointer;
+            }
+    
+            /* Table row styles */
+            tr {
+                background-color: #f5f0e1; /* Light beige background for each row */
+                border-radius: 15px; /* Rounded corners for rows */
+                padding: 10px;
+            }
+    
+            tr:hover {
+                background-color: #e1d4b7; /* Slightly darker beige on hover */
+            }
+    
+            /* Table cell styles */
+            td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #0c0c0c; /* Light border at the bottom of each cell */
+            }
+    
+            /* Apply rounded corners for each row's cells */
+            tr:first-child td:first-child {
+                border-top-left-radius: 15px; /* First row's first cell */
+            }
+    
+            tr:first-child td:last-child {
+                border-top-right-radius: 15px; /* First row's last cell */
+            }
+    
+            tr:last-child td:first-child {
+                border-bottom-left-radius: 15px; /* Last row's first cell */
+            }
+    
+            tr:last-child td:last-child {
+                border-bottom-right-radius: 15px; /* Last row's last cell */
+            }
+    
+            /* Last row has no bottom border */
+            tr:last-child td {
+                border-bottom: none;
+            }
+    
+            .dropdown {
+            position: relative;
+            display: inline-block;
+            }
+    
+            .dropdown-content {
+            display: none;
+            /* position: absolute; */
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            }
+    
+            .dropdown-content label {
+            display: block;
+            margin-top: 10px;
+            }
+    
+            .pagination {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+    
+            .page-link {
+                padding: 8px 15px;
+                background-color: #324e6b;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+        
+            .page-link.active {
+                background-color: #e1d4b7;
+                font-weight: bold;
+            }
+        
+            .page-link:hover {
+                background-color: #5c7d9b;
+            }
+            #apply-filters {
+                background-color: #7693a1;
+            }
+
+            #reset-filters {
+                background-color: rgb(146, 5, 5);
+            }
+
+            @media (max-width: 768px) {
+
+                h1, h2 {
+                    font-size: 1.5rem;
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+
+                .options-panel {
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .dropdown {
+                    width: 90%;
+                    text-align: center;
+                }
+
+                .dropdown-content {
+                    position: static; /* Avoid dropdowns overflowing screen on mobile */
+                    min-width: 100%;
+                }
+
+                button, th {
+                    font-size: 14px;
+                    width: 100%;
+                    padding: 10px;
+                }
+
+                .table-container {
+                    width: 95%;
+                    padding: 10px;
+                }
+
+                table {
+                    display: block;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    font-size: 12px;
+                }
+
+                th, td {
+                    padding: 10px;
+                }
+
+                .pagination {
+                    flex-wrap: wrap;
+                    gap: 5px;
+                    font-size: 14px;
+                }
+
+                .page-link {
+                    padding: 6px 10px;
+                    font-size: 13px;
+                }
+
+                #chart {
+                    width: 95% !important;
+                    height: 300px !important;
+                }
+
+                .dropdown-content input[type="checkbox"],
+                .dropdown-content input[type="radio"],
+                .dropdown-content label {
+                    font-size: 13px;
+                }
+            }
+        </style>
+
+        <script>
+        
+            // Global variable for URL parameters
+            document.addEventListener("DOMContentLoaded", function() {
+                // Initialize URL parameters
+                urlParams = new URLSearchParams(window.location.search);
+                
+                // Initialize all dropdowns
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    let button = dropdown.querySelector('button');
+                    let content = dropdown.querySelector('.dropdown-content');
+
+                    button.addEventListener('click', function() {
+                        // Toggle the display of this dropdown
+                        content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+
+                        // Close other dropdowns
+                        document.querySelectorAll('.dropdown .dropdown-content').forEach(otherContent => {
+                            if (otherContent !== content) {
+                                otherContent.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+        
+                // Set pagination links
+                document.querySelectorAll(".page-link").forEach(link => {
+                    const pageNumber = link.dataset.page;
+                    if (pageNumber) {
+                        let newParams = new URLSearchParams(urlParams.toString());
+                        newParams.set("page", pageNumber);  // Update page number in URL parameters
+                        link.href = "?" + newParams.toString();  // Set href with all parameters
+                    }
+                });
+                    
+                // Restore checkbox selections
+                setCheckboxValues("monitors");
+                setCheckboxValues("failures");
+                setCheckboxValues("state");
+                
+                // Restore date and time inputs
+                setDateTimeInputs();
+
+                // reset filters functionality
+                document.getElementById("reset-filters").addEventListener("click", function() {
+                    window.location.href = "/monitordata";
+                });
+                    
+                document.getElementById("apply-filters").addEventListener("click", function() {
+                    let selectedMonitors = getSelectedValues('monitors');
+                    let selectedFailures = getSelectedValues('failures');
+                    let selectedStates = getSelectedValues('state');
+
+                    let fromDate = formatTimestamp(
+                        getInputValue('input[name="from_date"]'),
+                        getInputValue('input[name="from_time"]')
+                    );
+
+                    let toDate = formatTimestamp(
+                        getInputValue('input[name="to_date"]'),
+                        getInputValue('input[name="to_time"]')
+                    );
+
+                    console.log("From Date & Time:", fromDate);
+
+                    let queryParams = new URLSearchParams();
+                    if (selectedMonitors.length) queryParams.append("monitors", selectedMonitors.join(","));
+                    if (selectedFailures.length) queryParams.append("failures", selectedFailures.join(","));
+                    if (selectedStates.length) queryParams.append("state", selectedStates.join(","));
+                    if (fromDate) queryParams.append("from_date", fromDate);
+                    if (toDate) queryParams.append("to_date", toDate);
+
+                    window.location.href = "/monitordata?" + queryParams.toString();
+                });
+                
+                // graph button handlers
+                document.getElementById('soc-graph').addEventListener('click', function() {
+                    handleGraphButtonClick('soc');
+                });
+                
+                document.getElementById('failure-graph').addEventListener('click', function() {
+                    handleGraphButtonClick('failure');
+                });
+                
+                document.getElementById('State-graph').addEventListener('click', function() {
+                    handleGraphButtonClick('state');
+                });
+            });
+
+            // Helper functions
+            function getInputValue(selector) {
+                const element = document.querySelector(selector);
+                return element ? element.value : '';  // Safeguard for missing elements
+            }
+
+            function formatTimestamp(date, time) {
+                if (!date) return '';  // Return empty string if no date
+                return `${date} ${time || '00:00'}:00`;  // Correctly use template literals
+            }
+
+            function getSelectedValues(name) {
+                return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+                            .map(cb => cb.value);
+            }
+
+            function setCheckboxValues(name) {
+                const values = urlParams.get(name);
+                if (values) {
+                    values.split(",").forEach(value => {
+                        let checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+            }
+
+            function setDateTimeInputs() {
+                let fromDate = urlParams.get("from_date");
+                let toDate = urlParams.get("to_date");
+                
+                
+                if (fromDate) {
+                    // Parse the timestamp (format: YYYY-MM-DD HH:MM:SS)
+                    let [datePart, timePart] = fromDate.split(' ');
+                    document.querySelector('input[name="from_date"]').value = datePart;
+                    if (timePart) {
+                        document.querySelector('input[name="from_time"]').value = timePart.substring(0, 5); // Remove seconds
+                    }
+                }
+                
+                if (toDate) {
+                    // Parse the timestamp (format: YYYY-MM-DD HH:MM:SS)
+                    let [datePart, timePart] = toDate.split(' ');
+                    document.querySelector('input[name="to_date"]').value = datePart;
+                    if (timePart) {
+                        document.querySelector('input[name="to_time"]').value = timePart.substring(0, 5); // Remove seconds
+                    }
+                }
+            }
+
+            // Graph functions
+            function handleGraphButtonClick(graphType) {
+                // Get selected monitor
+                const selectedMonitor = document.querySelector('input[name="monitors_graph"]:checked');
+                
+                if (!selectedMonitor) {
+                    alert("Please select a monitor first");
+                    return;
+                }
+                
+                // Get date range filters if present
+                const fromDate = urlParams.get("from_date") || "";
+                const toDate = urlParams.get("to_date") || "";
+                
+                // Fetch data from the API
+                fetchGraphData(selectedMonitor.value, graphType, fromDate, toDate);
+            }
+
+            async function fetchGraphData(monitorId, graphType, fromDate, toDate) {
+                // Build the API URL
+                let apiUrl = `/api/graph-data?monitor_id=${monitorId}&graph_type=${graphType}`;
+                if (fromDate) apiUrl += `&from_date=${fromDate}`;
+                if (toDate) apiUrl += `&to_date=${toDate}`;
+                
+                try {
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        document.getElementById('chart').innerHTML = `<div style="text-align: center; color: red; padding: 50px;">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    createPlotlyGraph(data, graphType);
+                } catch (error) {
+                    document.getElementById('chart').innerHTML = `<div style="text-align: center; color: red; padding: 50px;">Error loading graph: ${error.message}</div>`;
+                }
+            }
+
+            function createPlotlyGraph(data, graphType) {
+                // Configure graph based on type
+                let graphConfig = {
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { width: 2 }
+                };
+                
+                // Customize graph appearance based on type
+                switch(graphType.toLowerCase()) {
+                    case 'soc':
+                        graphConfig.line.color = 'rgb(46, 204, 113)';
+                        break;
+                    case 'failure':
+                        graphConfig.mode = 'markers';
+                        graphConfig.marker = { 
+                            size: 10,
+                            color: 'rgb(231, 76, 60)'
+                        };
+                        break;
+                    case 'state':
+                        graphConfig.mode = 'lines';
+                        graphConfig.line = {
+                            shape: 'hv',
+                            color: 'rgb(52, 152, 219)'
+                        };
+                        
+                        // Handle state mapping for y-axis ticks if provided
+                        if (data.state_mapping && Object.keys(data.state_mapping).length > 0) {
+                            data.layout = data.layout || {};
+                            data.layout.yaxis = data.layout.yaxis || {};
+                            data.layout.yaxis.tickmode = 'array';
+                            data.layout.yaxis.tickvals = Object.keys(data.state_mapping).map(Number);
+                            data.layout.yaxis.ticktext = Object.values(data.state_mapping);
+                        }
+                        break;
+                }
+                
+                // Create the plot
+                const layout = {
+                    title: { text: data.title},
+                    xaxis: {
+                        title: {text: data.xaxis},
+                        showgrid: true,
+                        zeroline: false,
+                        type: 'date',
+                        tickformat: '%Y-%m-%d %H:%M'
+                    },
+                    yaxis: {
+                        title: {text: data.yaxis},
+                        showline: true,
+                        showgrid: true
+                    },
+                    margin: { l: 60, r: 40, t: 80, b: 80 }
+                };
+                
+                // Merge with custom layout if provided
+                if (data.layout) {
+                    Object.assign(layout, data.layout);
+                }
+                
+                const plotData = [{
+                    x: data.time,
+                    y: data.y_values,
+                    ...graphConfig
+                }];
+                
+                Plotly.newPlot('chart', plotData, layout);
+
+                console.log("Graph data:", data);
+                console.log("Graph layout:", layout);
+            }
+
+ 
+            
+
+    </script>
+{% endblock %}

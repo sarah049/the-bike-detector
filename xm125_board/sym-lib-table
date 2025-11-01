@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "xm125")(type "KiCad")(uri "${KIPRJMOD}/lib/xm125/2025-03-18_07-11-04.kicad_sym")(options "")(descr ""))
+)
